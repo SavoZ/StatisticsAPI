@@ -19,3 +19,9 @@ obj
 
 \.vs/StatisticsAPI/v15/Server/sqlite3/storage\.ide-wal
 
+
+\.vs/StatisticsAPI/v15/Server/sqlite3/db\.lock
+
+\.vs/StatisticsAPI/v15/Server/sqlite3/storage\.ide-shm
+
+\.vs/StatisticsAPI/v15/Server/sqlite3/storage\.ide-wal
