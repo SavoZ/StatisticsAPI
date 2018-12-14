@@ -18,12 +18,26 @@ namespace WebApplication2.Helper {
 			}
 		}
 		#endregion
+
 		#region CalculateGGThreePlusPercentage
 		public int CalculateGGThreePlusPercentage(List<MatchModel> aoMatches) {
 			if (CalculateNPlusGoals(aoMatches, 3) == 0) {
 				return 0;
 			} else {
 				double percentage = CalculateGGNPlusGoals(aoMatches, 3);
+				percentage = (percentage / aoMatches.Count) * 100;
+				var per = (int) Math.Round(percentage);
+				return per;
+			}
+		}
+		#endregion
+
+		#region CalculateGGorThreePlusPercentage
+		public int CalculateGGorThreePlusPercentage(List<MatchModel> aoMatches) {
+			if (CalculateNPlusGoals(aoMatches, 3) == 0 || (aoMatches.Count(m => m.HomeGoals > 0 && m.AwayGoals > 0) == 0)) {
+				return 0;
+			} else {
+				double percentage = CalculateGGorThreePlusGoals(aoMatches, 3);
 				percentage = (percentage / aoMatches.Count) * 100;
 				var per = (int) Math.Round(percentage);
 				return per;
@@ -64,6 +78,18 @@ namespace WebApplication2.Helper {
 		/// <returns></returns>
 		public int CalculateGGNPlusGoals(List<MatchModel> aoMatches, int limit) {
 			return aoMatches.Count(c => (c.HomeGoals + c.AwayGoals >= limit) && c.HomeGoals >= 1 && c.AwayGoals >= 1);
+		}
+		#endregion
+
+		#region CalculateGGorThreePlusGoals(List<MatchModel> aoMatches, int limit)
+		/// <summary>
+		/// Returns number of matches which meets the condition
+		/// </summary>
+		/// <param name="aoMatches">List of matches the team has played</param>
+		/// <param name="limit">1+2+3+4+5+</param>
+		/// <returns></returns>
+		public int CalculateGGorThreePlusGoals(List<MatchModel> aoMatches, int limit) {
+			return aoMatches.Count(c => (c.HomeGoals + c.AwayGoals >= limit) || (c.HomeGoals > 0 && c.AwayGoals > 0));
 		}
 		#endregion
 

@@ -28,34 +28,6 @@ namespace WebApplication2.Controllers {
 				var model = new List<StatisticsMatchModel>();
 				foreach (var league in leagues) {
 
-					//var statsTables = db.StatisticsTables
-					//	.Where(t => t.CompetitionId == league).Select(t =>
-					//		new TeamGoalsModel() { Position = t.Position, TeamName = t.TeamName, TeamID = t.TeamId }).ToList();
-
-					//foreach (var team in statsTables) {
-					//	var teamMatches = db.StatisticsMatches
-					//		.Where(m => m.CompentitionId == league && (m.HomeId == team.TeamID || m.AwayId == team.TeamID) &&
-					//					m.Finished).Select(m => new MatchModel() {
-					//						AwayID = m.AwayId,
-					//						AwayGoals = m.AwayPoints,
-					//						AwayName = m.AwayName,
-					//						HomeID = m.HomeId,
-					//						HomeGoals = m.HomePoints,
-					//						HomeName = m.HomeName
-					//					}).ToList();
-					//	team.ZeroToTwo = calculator.CalculateZeroToNGoals(teamMatches, 2);
-					//	//team.ZeroToTwoPercentage = calculator.CalculateZeroToTwoGoalsPercentage(teamMatches);
-					//	team.ThreePlus = calculator.CalculateNPlusGoals(teamMatches, 3);
-					//	team.ThreePlusPercentage = calculator.CalculateThreePlusGoalsPercentage(teamMatches);
-					//	team.ZeroGoals = calculator.CalculateZeroToNGoals(teamMatches, 0);
-					//	team.ZeroToOne = calculator.CalculateZeroToNGoals(teamMatches, 1);
-					//	team.TwoPlusGoals = calculator.CalculateNPlusGoals(teamMatches, 2);
-					//	team.OneToTwoGoals = calculator.CalculateGoalsRange(teamMatches, 1, 2);
-					//	team.OneToThreeGoals = calculator.CalculateGoalsRange(teamMatches, 1, 3);
-					//	team.TwoToThreeGoals = calculator.CalculateGoalsRange(teamMatches, 2, 3);
-					//	team.TwoToFourGoals = calculator.CalculateGoalsRange(teamMatches, 2, 4);
-					//}
-
 					var matches = db.StatisticsMatches.Where(l => l.CompentitionId == league);
 					var tables = db.StatisticsTables.Where(l => l.CompetitionId == league);
 					var matchPlayed = await tables.FirstOrDefaultAsync();
@@ -132,7 +104,7 @@ namespace WebApplication2.Controllers {
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> GetTeamsStatistics() {
+		public async Task<IActionResult> GetGoalsStatistics() {
 			IActionResult loResult = BadRequest();
 			var calculator = new StatisticsCalculator();
 
@@ -157,23 +129,59 @@ namespace WebApplication2.Controllers {
 											HomeName = m.HomeName
 										})).ToListAsync();
 						team.TotalGames = teamMatches.Count;
-						//team.ZeroToTwoPercentage = calculator.CalculateZeroToTwoGoalsPercentage(teamMatches);
-						//team.ThreePlusPercentage = calculator.CalculateThreePlusGoalsPercentage(teamMatches);
+						team.ZeroToTwoPercentage = calculator.CalculateZeroToTwoGoalsPercentage(teamMatches);
+						team.ThreePlusPercentage = calculator.CalculateThreePlusGoalsPercentage(teamMatches);
 
-						//team.OneToThreeGoals = calculator.CalculateGoalsRange(teamMatches, 1, 3);
-						//team.TwoToThreeGoals = calculator.CalculateGoalsRange(teamMatches, 2, 3);
-						//team.TwoToFourGoals = calculator.CalculateGoalsRange(teamMatches, 2, 4);
-						//if (team.TotalGames > 0) {
-						//	team.OneToThreeGoalsPercentage = team.OneToThreeGoals * 100 / team.TotalGames;
-						//	team.TwoToThreeGoalsPercentage = team.TwoToThreeGoals * 100 / team.TotalGames;
-						//}
+						team.OneToThreeGoals = calculator.CalculateGoalsRange(teamMatches, 1, 3);
+						team.TwoToThreeGoals = calculator.CalculateGoalsRange(teamMatches, 2, 3);
+						team.TwoToFourGoals = calculator.CalculateGoalsRange(teamMatches, 2, 4);
+						if (team.TotalGames > 0) {
+							team.OneToThreeGoalsPercentage = team.OneToThreeGoals * 100 / team.TotalGames;
+							team.TwoToThreeGoalsPercentage = team.TwoToThreeGoals * 100 / team.TotalGames;
+						}
+						team.ZeroThreeToFive = calculator.CalculateZeroAndGoalsRange(teamMatches, team.TeamID, 3, 5);
+						team.ZeroTwoToFive = calculator.CalculateZeroAndGoalsRange(teamMatches, team.TeamID, 2, 5);
+						team.TwoToFourGoalsPercentage = team.TwoToFourGoals * 100 / team.TotalGames;
+
+						model.Add(team);
+					}
+				}
+
+				return Ok(model);
+			}
+		}
+
+		[HttpGet]
+		public async Task<IActionResult> GetDoubleChanceStatistics() {
+			IActionResult loResult = BadRequest();
+			var calculator = new StatisticsCalculator();
+
+			using (var db = new CouponAdminContext()) {
+
+				var model = new List<TeamGoalsModel>();
+
+				foreach (var league in leagues) {
+
+					var statsTables = db.StatisticsTables.Where(t => t.CompetitionId == league).Select(t =>
+							new TeamGoalsModel() { Position = t.Position, TeamName = t.TeamName, TeamID = t.TeamId }).ToList();
+
+					foreach (var team in statsTables) {
+						var teamMatches = await (db.StatisticsMatches
+							.Where(m => m.CompentitionId == league && (m.HomeId == team.TeamID || m.AwayId == team.TeamID) &&
+										m.Finished).Select(m => new MatchModel() {
+											AwayID = m.AwayId,
+											AwayGoals = m.AwayPoints,
+											AwayName = m.AwayName,
+											HomeID = m.HomeId,
+											HomeGoals = m.HomePoints,
+											HomeName = m.HomeName
+										})).ToListAsync();
+						team.TotalGames = teamMatches.Count;
+
 						team.ZeroTwoToThreeGoals = calculator.CalculateZeroAndGoalsRange(teamMatches, team.TeamID, 2, 3);
 						team.ZeroTwoToFourGoals = calculator.CalculateZeroAndGoalsRange(teamMatches, team.TeamID, 2, 4);
 						team.GGThreePlusPercentage = calculator.CalculateGGThreePlusPercentage(teamMatches);
-						//team.ZeroThreeToFive = calculator.CalculateZeroAndGoalsRange(teamMatches, team.TeamID, 3, 5);
-						//team.ZeroTwoToFive = calculator.CalculateZeroAndGoalsRange(teamMatches, team.TeamID, 2, 5);
-						//team.TwoToFourGoalsPercentage = team.TwoToFourGoals * 100 / team.TotalGames;
-
+						team.GGorThreePlusPercentage = calculator.CalculateGGorThreePlusPercentage(teamMatches);
 						model.Add(team);
 					}
 				}
