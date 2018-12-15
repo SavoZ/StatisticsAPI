@@ -154,7 +154,6 @@ namespace SatisticsAPI.Controllers {
 						throw e;
 					}
 				}
-
 				return Ok(model);
 			}
 		}
