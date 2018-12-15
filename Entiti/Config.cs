@@ -2,7 +2,7 @@
 using System.IO;
 using Microsoft.Extensions.Configuration;
 
-namespace Entiti {
+namespace SatisticsDB {
 	public class Config {
 		private static IConfigurationRoot _config;
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace WebApplication2.Models {
+namespace SatisticsAPI.Models {
 	public class TeamGoalsModel  {
 		public Int32 TotalGames { get; set; }
 		public Int32 TotalGoals { get; set; }
@@ -33,6 +33,6 @@ namespace WebApplication2.Models {
 		public Int32 ZeroTwoToFive { get; set; }
 		public Int32 ZeroThreeToFive { get; set; }
 		public Int32 GGThreePlusPercentage { get; set; }
-
+		public Int32 GGorThreePlusPercentage { get; set; }
 	}
 }
