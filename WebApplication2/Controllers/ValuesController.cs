@@ -6,7 +6,7 @@ using Entiti.DB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace WebApplication2.Controllers {
+namespace SatisticsAPI.Controllers {
 	[Route("api/[controller]")]
 	[ApiController]
 	public class ValuesController : ControllerBase {

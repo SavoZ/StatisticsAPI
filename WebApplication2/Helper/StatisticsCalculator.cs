@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using WebApplication2.Models;
+using SatisticsAPI.Models;
 
-namespace WebApplication2.Helper {
+namespace SatisticsAPI.Helper {
 	public class StatisticsCalculator {
 		#region CalculateThreePlusGoalsPercentage(List<MatchModel> aoMatches)
 		public int CalculateThreePlusGoalsPercentage(List<MatchModel> aoMatches) {
@@ -132,6 +132,29 @@ namespace WebApplication2.Helper {
 			var matchPlayed = matches.Count == 0 ? 1 : matches.Count;
 
 			var count = matches.Count(c => c.HomeGoals + c.AwayGoals >= aoFromGoal && c.HomeGoals + c.AwayGoals <= aoToGoal && c.HomeGoals > c.AwayGoals);
+
+			return (count * 100) / matchPlayed;
+		}
+		#endregion
+
+		#region CalculateTwoAndGoalsRange(List<MatchModel> aoMatches, int aoFromGoal, int aoToGoal)
+		public int CalculateTwoAndGoalsRange(List<MatchModel> aoMatches, int teamId, int aoFromGoal, int aoToGoal) {
+			var matches = aoMatches.Where(c => c.AwayID == teamId).ToList();
+			var matchPlayed = matches.Count == 0 ? 1 : matches.Count;
+
+			var count = matches.Count(c => c.HomeGoals + c.AwayGoals >= aoFromGoal && c.HomeGoals + c.AwayGoals <= aoToGoal && c.AwayGoals > c.HomeGoals);
+
+			return (count * 100) / matchPlayed;
+		}
+		#endregion
+
+
+		#region CalculateNotTwoAndGoalsRange(List<MatchModel> aoMatches, int aoFromGoal)
+		public int CalculateNotTwoAndGoalsRange(List<MatchModel> aoMatches, int teamId, int aoFromGoal) {
+			var matches = aoMatches.Where(c => c.HomeID == teamId).ToList();
+			var matchPlayed = matches.Count == 0 ? 1 : matches.Count;
+
+			var count = matches.Count(c => c.HomeGoals + c.AwayGoals >= aoFromGoal && c.HomeGoals >= c.AwayGoals);
 
 			return (count * 100) / matchPlayed;
 		}

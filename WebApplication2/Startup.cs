@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace WebApplication2 {
+namespace SatisticsAPI {
 	public class Startup {
 		private readonly ILogger<DefaultCorsPolicyService> _logger;
 

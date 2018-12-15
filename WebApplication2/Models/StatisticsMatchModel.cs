@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace WebApplication2.Models {
+namespace SatisticsAPI.Models {
 	public class StatisticsMatchModel {
 		public string HomeName { get; set; }
 		public string AwayName { get; internal set; }

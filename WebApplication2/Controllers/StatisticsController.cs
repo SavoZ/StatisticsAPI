@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using Entiti.DB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using WebApplication2.Helper;
-using WebApplication2.Models;
+using SatisticsAPI.Helper;
+using SatisticsAPI.Models;
 
-namespace WebApplication2.Controllers {
+namespace SatisticsAPI.Controllers {
 	[Route("api/[controller]/[action]")]
 	[ApiController]
 	public class StatisticsController : ControllerBase {
@@ -113,37 +113,45 @@ namespace WebApplication2.Controllers {
 				var model = new List<TeamGoalsModel>();
 
 				foreach (var league in leagues) {
+					try {
 
-					var statsTables = db.StatisticsTables.Where(t => t.CompetitionId == league).Select(t =>
-							new TeamGoalsModel() { Position = t.Position, TeamName = t.TeamName, TeamID = t.TeamId }).ToList();
+						var statsTables = db.StatisticsTables.Where(t => t.CompetitionId == league).Select(t =>
+								new TeamGoalsModel() { Position = t.Position, TeamName = t.TeamName, TeamID = t.TeamId })
+							.ToList();
 
-					foreach (var team in statsTables) {
-						var teamMatches = await (db.StatisticsMatches
-							.Where(m => m.CompentitionId == league && (m.HomeId == team.TeamID || m.AwayId == team.TeamID) &&
-										m.Finished).Select(m => new MatchModel() {
-											AwayID = m.AwayId,
-											AwayGoals = m.AwayPoints,
-											AwayName = m.AwayName,
-											HomeID = m.HomeId,
-											HomeGoals = m.HomePoints,
-											HomeName = m.HomeName
-										})).ToListAsync();
-						team.TotalGames = teamMatches.Count;
-						team.ZeroToTwoPercentage = calculator.CalculateZeroToTwoGoalsPercentage(teamMatches);
-						team.ThreePlusPercentage = calculator.CalculateThreePlusGoalsPercentage(teamMatches);
+						foreach (var team in statsTables) {
+							var teamMatches = await (db.StatisticsMatches
+								.Where(m => m.CompentitionId == league &&
+											(m.HomeId == team.TeamID || m.AwayId == team.TeamID) &&
+											m.Finished).Select(m => new MatchModel() {
+												AwayID = m.AwayId,
+												AwayGoals = m.AwayPoints,
+												AwayName = m.AwayName,
+												HomeID = m.HomeId,
+												HomeGoals = m.HomePoints,
+												HomeName = m.HomeName
+											})).ToListAsync();
+							team.TotalGames = teamMatches.Count;
+							if (team.TotalGames == 0)
+								continue;
 
-						team.OneToThreeGoals = calculator.CalculateGoalsRange(teamMatches, 1, 3);
-						team.TwoToThreeGoals = calculator.CalculateGoalsRange(teamMatches, 2, 3);
-						team.TwoToFourGoals = calculator.CalculateGoalsRange(teamMatches, 2, 4);
-						if (team.TotalGames > 0) {
+							team.ZeroToTwoPercentage = calculator.CalculateZeroToTwoGoalsPercentage(teamMatches);
+							team.ThreePlusPercentage = calculator.CalculateThreePlusGoalsPercentage(teamMatches);
+							team.OneToThreeGoals = calculator.CalculateGoalsRange(teamMatches, 1, 3);
+							team.TwoToThreeGoals = calculator.CalculateGoalsRange(teamMatches, 2, 3);
+							team.TwoToFourGoals = calculator.CalculateGoalsRange(teamMatches, 2, 4);
 							team.OneToThreeGoalsPercentage = team.OneToThreeGoals * 100 / team.TotalGames;
 							team.TwoToThreeGoalsPercentage = team.TwoToThreeGoals * 100 / team.TotalGames;
-						}
-						team.ZeroThreeToFive = calculator.CalculateZeroAndGoalsRange(teamMatches, team.TeamID, 3, 5);
-						team.ZeroTwoToFive = calculator.CalculateZeroAndGoalsRange(teamMatches, team.TeamID, 2, 5);
-						team.TwoToFourGoalsPercentage = team.TwoToFourGoals * 100 / team.TotalGames;
+							team.ZeroThreeToFive =
+								calculator.CalculateZeroAndGoalsRange(teamMatches, team.TeamID, 3, 5);
+							team.ZeroTwoToFive = calculator.CalculateZeroAndGoalsRange(teamMatches, team.TeamID, 2, 5);
+							team.TwoToFourGoalsPercentage = team.TwoToFourGoals * 100 / team.TotalGames;
 
-						model.Add(team);
+							model.Add(team);
+						}
+					} catch (Exception e) {
+						Console.WriteLine(e);
+						throw e;
 					}
 				}
 
@@ -158,12 +166,12 @@ namespace WebApplication2.Controllers {
 
 			using (var db = new CouponAdminContext()) {
 
-				var model = new List<TeamGoalsModel>();
+				var model = new List<DoubleChanceModel>();
 
 				foreach (var league in leagues) {
 
 					var statsTables = db.StatisticsTables.Where(t => t.CompetitionId == league).Select(t =>
-							new TeamGoalsModel() { Position = t.Position, TeamName = t.TeamName, TeamID = t.TeamId }).ToList();
+							new DoubleChanceModel() { Position = t.Position, TeamName = t.TeamName, TeamID = t.TeamId }).ToList();
 
 					foreach (var team in statsTables) {
 						var teamMatches = await (db.StatisticsMatches
@@ -180,6 +188,10 @@ namespace WebApplication2.Controllers {
 
 						team.ZeroTwoToThreeGoals = calculator.CalculateZeroAndGoalsRange(teamMatches, team.TeamID, 2, 3);
 						team.ZeroTwoToFourGoals = calculator.CalculateZeroAndGoalsRange(teamMatches, team.TeamID, 2, 4);
+						team.TwoTwoToFourGoals = calculator.CalculateTwoAndGoalsRange(teamMatches, team.TeamID, 2, 4);
+						team.TwoTwoToThreeGoals = calculator.CalculateTwoAndGoalsRange(teamMatches, team.TeamID, 2, 3);
+						team.NotTwoAndThreeGoals = calculator.CalculateNotTwoAndGoalsRange(teamMatches, team.TeamID, 3);
+						team.NotTwoAndTwoGoals = calculator.CalculateNotTwoAndGoalsRange(teamMatches, team.TeamID, 2);
 						team.GGThreePlusPercentage = calculator.CalculateGGThreePlusPercentage(teamMatches);
 						team.GGorThreePlusPercentage = calculator.CalculateGGorThreePlusPercentage(teamMatches);
 						model.Add(team);
