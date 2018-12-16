@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Entiti.DB;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using StatisticsDataBase.DB;
 
 namespace SatisticsAPI.Controllers {
 	[Route("api/[controller]")]
@@ -14,7 +11,7 @@ namespace SatisticsAPI.Controllers {
 		[HttpGet]
 		public ActionResult<IEnumerable<string>> Get() {
 
-			using (var db = new CouponAdminContext())
+			using (var db = new StatisticsContext())
 			{
 				var matches = db.StatisticsMatches.Where(l => l.CompentitionId == 80).ToList();
 			}

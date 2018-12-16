@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Entiti.DB;
+using StatisticsDataBase.DB;
 
 namespace StatisticsService.DB {
 	public class DBHelper {
 
-		public void UpdateTable(List<StatisticsTables> aoTables) {
-			var loEntities = new CouponAdminContext();
+		public void UpdateTable(List<StatisticsTable> aoTables) {
+			var loEntities = new StatisticsContext();
 			var competitionID = -1;
 			if (aoTables.Any()) {
 				competitionID = aoTables.First().CompetitionId;
@@ -21,13 +21,13 @@ namespace StatisticsService.DB {
 			}
 		}
 
-		public void UpdateMatches(List<StatisticsMatches> aoMatches) {
-			var loEntities = new CouponAdminContext();
+		public void UpdateMatches(List<StatisticsMatch> aoMatches) {
+			var loEntities = new StatisticsContext();
 			var loMatches = loEntities.StatisticsMatches.ToList();
 
 			foreach (var loMatch in aoMatches) {
 				if (loMatches.Any(o => o.MatchId == loMatch.MatchId)) {
-					StatisticsMatches match = getMatch(loMatches, loMatch.MatchId);
+					StatisticsMatch match = getMatch(loMatches, loMatch.MatchId);
 					if (match.AwayId != loMatch.AwayId || match.HomeId != loMatch.HomeId || match.AwayPoints != loMatch.AwayPoints
 						|| match.HomePoints != loMatch.HomePoints || match.CompentitionId != loMatch.CompentitionId || match.Finished != loMatch.Finished
 						|| match.HomeName != loMatch.HomeName || match.AwayName != loMatch.AwayName || match.StartTime != loMatch.StartTime) {
@@ -52,7 +52,7 @@ namespace StatisticsService.DB {
 		}
 
 		#region private methods
-		private StatisticsMatches getMatch(List<StatisticsMatches> aoMatches, String matchID) {
+		private StatisticsMatch getMatch(List<StatisticsMatch> aoMatches, String matchID) {
 			return aoMatches.First(m => m.MatchId == matchID);
 		}
 		#endregion

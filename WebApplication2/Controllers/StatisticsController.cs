@@ -2,62 +2,58 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Entiti.DB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SatisticsAPI.Helper;
 using SatisticsAPI.Models;
+using StatisticsDataBase.DB;
 
 namespace SatisticsAPI.Controllers {
 	[Route("api/[controller]/[action]")]
 	[ApiController]
 	public class StatisticsController : ControllerBase {
 
-		public StatisticsController()
-		{
-			using (var db = new CouponAdminContext())
-			{
+		public StatisticsController() {
+			using (var db = new StatisticsContext()) {
+
 			}
 		}
 		//private readonly List<int> leagues = new List<int> { 80, 87, 92, 93, 95, 96, 103, 107, 108, 109, 110, 111, 112, 113, 115, 116, 117, 122, 123, 124, 125 };
-		private readonly List<int> leagues = new List<int> { 80, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 99, 102, 103, 104, 105, 107, 108, 109, 110,
-			111, 112, 113, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 132, 133, 134, 135, 136, 139, 142, 144, 145,
-			146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 157, 159, 198, 215, 236, 237, 243, 245, 247, 248, 252, 253, 262, 264, 271, 272, 273, 300,
-			304, 305, 310, 330, 331, 333, 341, 343, 379, 385, 416, 418, 485, 490, 527, 655, 656, 657, 658, 676, 684, 715, 716 };
+		//private readonly List<int> leagues = new List<int> { 80, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 99, 102, 103, 104, 105, 107, 108, 109, 110,
+		//	111, 112, 113, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 132, 133, 134, 135, 136, 139, 142, 144, 145,
+		//	146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 157, 159, 198, 215, 236, 237, 243, 245, 247, 248, 252, 253, 262, 264, 271, 272, 273, 300,
+		//	304, 305, 310, 330, 331, 333, 341, 343, 379, 385, 416, 418, 485, 490, 527, 655, 656, 657, 658, 676, 684, 715, 716 };
 
 		[HttpGet]
 		public async Task<IActionResult> GetStatistics() {
 			IActionResult loResult = BadRequest();
 			var calculator = new StatisticsCalculator();
 
-			using (var db = new CouponAdminContext()) {
+			using (var db = new StatisticsContext()) {
 
 				var model = new List<StatisticsMatchModel>();
-				foreach (var league in leagues) {
+				foreach (var league in db.Leagues) {
 
-					var matches = db.StatisticsMatches.Where(l => l.CompentitionId == league).OrderBy(r => r.StartTime).ToList();
-					var tables = db.StatisticsTables.Where(l => l.CompetitionId == league);
+					var matches = db.StatisticsMatches.Where(l => l.CompentitionId == league.LeagueId).OrderBy(r => r.StartTime).ToList();
+					var tables = db.StatisticsTables.Where(l => l.CompetitionId == league.LeagueId);
 					var matchPlayed = await tables.FirstOrDefaultAsync();
 
-					var round =  matches.FirstOrDefault(r => r.Finished == false);
+					var round = matches.FirstOrDefault(r => r.Finished == false);
 					var dateTo = DateTime.Now.AddDays(3);
 					var dateFrom = DateTime.Now;
 					if (round != null) {
-						var match =  matches.Where(r => r.EventGroupName == round.EventGroupName && r.StartTime < dateTo
-																									  && r.StartTime > dateFrom)
-												 .Select(a => new StatisticsMatchModel {
-													 HomeName = a.HomeName,
-													 AwayName = a.AwayName,
-													 StartTime = a.StartTime.ToString("dd.MM.yyyy. HH:mm"),
-													 HomeGoalsScored = tables.Where(t => t.TeamId == a.HomeId).Sum(b => b.TotalGoalsScored),
-													 AwayGoalsScored = tables.Where(t => t.TeamId == a.AwayId).Sum(b => b.TotalGoalsScored),
-													 HomeGoalsAgaints = tables.Where(t => t.TeamId == a.HomeId).Sum(b => b.TotalGoalsAgaints),
-													 AwayGoalsAgaints = tables.Where(t => t.TeamId == a.AwayId).Sum(b => b.TotalGoalsAgaints),
-													 MatchPlayed = matchPlayed.MatchesPlayed,
-													 //HomeThreePlus = calculator.CalculateThreePlusGoalsPercentage,
-													 HomeMatches = getMatches(matches, a.HomeId),
-													 AwayMatches = getMatches(matches, a.AwayId),
-												 }).ToList();
+						var match = matches.Where(r => r.EventGroupName == round.EventGroupName
+													   && r.StartTime < dateTo && r.StartTime > dateFrom)
+										   .Select(a => new StatisticsMatchModel {
+											   Home = a.HomeName,
+											   Away = a.AwayName,
+											   HomeStats = tables.Where(t => t.TeamId == a.HomeId).ToList(),
+											   AwayStats = tables.Where(t => t.TeamId == a.AwayId).ToList(),
+											   StartTime = a.StartTime.ToString("dd.MM.yyyy. HH:mm"),
+											   MatchPlayed = matchPlayed.MatchesPlayed,
+											   HomeMatches = getMatches(matches, a.HomeId),
+											   AwayMatches = getMatches(matches, a.AwayId),
+										   }).ToList();
 						model.AddRange(match);
 					}
 				}
@@ -66,9 +62,9 @@ namespace SatisticsAPI.Controllers {
 			}
 		}
 
-		private List<MatchModel> getMatches(List<StatisticsMatches> matches, int teamId) {
+		private List<MatchModel> getMatches(List<StatisticsMatch> matches, int teamId) {
 			var model = matches.Where(m => (m.HomeId == teamId || m.AwayId == teamId) &&
-										   m.Finished).Select(m => new MatchModel() {
+										   m.Finished == true).Select(m => new MatchModel() {
 											   AwayID = m.AwayId,
 											   AwayGoals = m.AwayPoints,
 											   AwayName = m.AwayName,
@@ -81,12 +77,12 @@ namespace SatisticsAPI.Controllers {
 
 		public async Task<GoalsModel> CalculateGoalsStats(Int64 aoLeague, Int32 aoTeam) {
 			var loModel = new GoalsModel();
-			var loEntities = new CouponAdminContext();
+			var loEntities = new StatisticsContext();
 
 			var loMatches = await (from m in loEntities.StatisticsMatches
 								   where m.CompentitionId == aoLeague &&
 										 (m.HomeId == aoTeam || m.AwayId == aoTeam) &&
-										 m.Finished
+										 m.Finished == true
 								   orderby m.StartTime
 								   select new MatchModel {
 									   HomeID = m.HomeId,
@@ -112,22 +108,22 @@ namespace SatisticsAPI.Controllers {
 			IActionResult loResult = BadRequest();
 			var calculator = new StatisticsCalculator();
 
-			using (var db = new CouponAdminContext()) {
+			using (var db = new StatisticsContext()) {
 
 				var model = new List<TeamGoalsModel>();
 
-				foreach (var league in leagues) {
+				foreach (var league in db.Leagues) {
 					try {
 
-						var statsTables = db.StatisticsTables.Where(t => t.CompetitionId == league).Select(t =>
+						var statsTables = db.StatisticsTables.Where(t => t.CompetitionId == league.LeagueId).Select(t =>
 								new TeamGoalsModel() { Position = t.Position, TeamName = t.TeamName, TeamID = t.TeamId })
 							.ToList();
 
 						foreach (var team in statsTables) {
 							var teamMatches = await (db.StatisticsMatches
-								.Where(m => m.CompentitionId == league &&
+								.Where(m => m.CompentitionId == league.LeagueId &&
 											(m.HomeId == team.TeamID || m.AwayId == team.TeamID) &&
-											m.Finished).Select(m => new MatchModel() {
+											m.Finished == true).Select(m => new MatchModel() {
 												AwayID = m.AwayId,
 												AwayGoals = m.AwayPoints,
 												AwayName = m.AwayName,
@@ -167,19 +163,19 @@ namespace SatisticsAPI.Controllers {
 			IActionResult loResult = BadRequest();
 			var calculator = new StatisticsCalculator();
 
-			using (var db = new CouponAdminContext()) {
+			using (var db = new StatisticsContext()) {
 
 				var model = new List<DoubleChanceModel>();
 
-				foreach (var league in leagues) {
+				foreach (var league in db.Leagues) {
 
-					var statsTables = db.StatisticsTables.Where(t => t.CompetitionId == league).Select(t =>
+					var statsTables = db.StatisticsTables.Where(t => t.CompetitionId == league.LeagueId).Select(t =>
 							new DoubleChanceModel() { Position = t.Position, TeamName = t.TeamName, TeamID = t.TeamId }).ToList();
 
 					foreach (var team in statsTables) {
 						var teamMatches = await (db.StatisticsMatches
-							.Where(m => m.CompentitionId == league && (m.HomeId == team.TeamID || m.AwayId == team.TeamID) &&
-										m.Finished).Select(m => new MatchModel() {
+							.Where(m => m.CompentitionId == league.LeagueId && (m.HomeId == team.TeamID || m.AwayId == team.TeamID) &&
+										m.Finished == true).Select(m => new MatchModel() {
 											AwayID = m.AwayId,
 											AwayGoals = m.AwayPoints,
 											AwayName = m.AwayName,

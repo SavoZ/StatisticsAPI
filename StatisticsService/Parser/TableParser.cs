@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Entiti.DB;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using StatisticsDataBase.DB;
 
 namespace StatisticsService.Parser {
-	public class TableParser : Parser<StatisticsTables> {
+	public class TableParser : Parser<StatisticsTable> {
 		public override void Parse(string json) {
 			try {
 				var loObjects = JsonConvert.DeserializeObject<JObject>(json)["response"];
 				foreach (var obj in loObjects.Children()) {
-					var table = new StatisticsTables() {
+					var table = new StatisticsTable() {
 						SeasonName = obj.Value<String>("season_name"),
 						CompetitionId = obj.Value<Int32>("competition_id"),
 						GroupName = obj.Value<String>("group_name"),

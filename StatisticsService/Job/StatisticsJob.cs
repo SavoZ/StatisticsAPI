@@ -4,18 +4,16 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
-using Entiti.DB;
 using Newtonsoft.Json;
 using Quartz;
+using StatisticsDataBase.DB;
 using StatisticsService.DB;
 using StatisticsService.Parser;
 
 namespace StatisticsService.Job {
 	public class StatisticsJob : IJob {
-		public Task Execute(IJobExecutionContext context)
-		{
+		public Task Execute(IJobExecutionContext context) {
 			return GetStats();
 		}
 		public async Task GetStats() {
@@ -24,7 +22,7 @@ namespace StatisticsService.Job {
 				var matchesParser = new MatchParser();
 				var tablesParser = new TableParser();
 
-					var loLeagues = await getStatisticsLeagues();
+				var loLeagues =  getStatisticsLeagues();
 
 				var num = 0;
 				foreach (var league in loLeagues) {
@@ -33,8 +31,8 @@ namespace StatisticsService.Job {
 						sWatch.Start();
 						var tParser = new TableParser();
 						var mParser = new MatchParser();
-						var t = GetTable(league.ID);
-						var m = GetMatches(league.ID);
+						var t = GetTable(league.LeagueId);
+						var m = GetMatches(league.LeagueId);
 						tParser.Parse(t);
 						mParser.Parse(m);
 						new DBHelper().UpdateTable(tParser.Records);
@@ -45,7 +43,7 @@ namespace StatisticsService.Job {
 					} catch (Exception ex) {
 						//BaseLogClass.Instance.ErrorMessage(ex.Message);
 						//BaseLogClass.Instance.ErrorMessage($"Grabing data for league: {league.ID} - {league.Name} was unsuccessfull");
-						Console.WriteLine($"Grabing data for league: {league.ID} - {league.Name} was unsuccessfull");
+						Console.WriteLine($"Grabing data for league: {league.LeagueId} - {league.LeagueName} was unsuccessfull");
 						if (ex.InnerException != null) {
 							//BaseLogClass.Instance.FatalErrorMessage(ex.InnerException.Message);
 							//BaseLogClass.Instance.FatalErrorMessage(ex.InnerException.StackTrace);
@@ -67,22 +65,10 @@ namespace StatisticsService.Job {
 		}
 
 		#region getStatisticsLeagues()
-		private async Task<List<StatisticsLeagueModel>> getStatisticsLeagues() {
-			var loEntities = new CouponAdminContext();
-
-			var leagues = new List<int> { 80, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 99, 102, 103, 104, 105, 107, 108, 109, 110,
-				111, 112, 113, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 132, 133, 134, 135, 136, 139, 142, 144, 145,
-				146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 157, 159, 198, 215, 236, 237, 243, 245, 247, 248, 252, 253, 262, 264, 271, 272, 273, 300,
-				304, 305, 310, 330, 331, 333, 341, 343, 379, 385, 416, 418, 485, 490, 527, 655, 656, 657, 658, 676, 684, 715, 716 };
-
-			var loModel = (from l in leagues
-						   join ls in loEntities.CouponLeagueStatistics on l equals ls.LeagueId
-						   select new StatisticsLeagueModel {
-							   ID = l,
-							   Name = "Liga "+ l
-						   }).OrderBy(l => l.ID).ToList();
-
-			return loModel;
+		private List<League> getStatisticsLeagues() {
+			using (var db = new StatisticsContext()) {
+				return db.Leagues.OrderBy(l => l.LeagueId).ToList();
+			}
 		}
 		#endregion
 
