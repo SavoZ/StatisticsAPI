@@ -12,6 +12,13 @@ namespace SatisticsAPI.Controllers {
 	[Route("api/[controller]/[action]")]
 	[ApiController]
 	public class StatisticsController : ControllerBase {
+
+		public StatisticsController()
+		{
+			using (var db = new CouponAdminContext())
+			{
+			}
+		}
 		//private readonly List<int> leagues = new List<int> { 80, 87, 92, 93, 95, 96, 103, 107, 108, 109, 110, 111, 112, 113, 115, 116, 117, 122, 123, 124, 125 };
 		private readonly List<int> leagues = new List<int> { 80, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 99, 102, 103, 104, 105, 107, 108, 109, 110,
 			111, 112, 113, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 132, 133, 134, 135, 136, 139, 142, 144, 145,
@@ -28,51 +35,48 @@ namespace SatisticsAPI.Controllers {
 				var model = new List<StatisticsMatchModel>();
 				foreach (var league in leagues) {
 
-					var matches = db.StatisticsMatches.Where(l => l.CompentitionId == league);
+					var matches = db.StatisticsMatches.Where(l => l.CompentitionId == league).OrderBy(r => r.StartTime).ToList();
 					var tables = db.StatisticsTables.Where(l => l.CompetitionId == league);
 					var matchPlayed = await tables.FirstOrDefaultAsync();
 
-					var round = await matches.OrderBy(r => r.StartTime).FirstOrDefaultAsync(r => r.Finished == false);
-
+					var round =  matches.FirstOrDefault(r => r.Finished == false);
+					var dateTo = DateTime.Now.AddDays(3);
+					var dateFrom = DateTime.Now;
 					if (round != null) {
-						var match = await matches.Where(r => r.EventGroupName == round.EventGroupName).Select(a =>
-												new StatisticsMatchModel {
-													HomeName = a.HomeName,
-													AwayName = a.AwayName,
-													HomeGoalsScored = tables.Where(t => t.TeamId == a.HomeId).Sum(b => b.TotalGoalsScored),
-													AwayGoalsScored = tables.Where(t => t.TeamId == a.AwayId).Sum(b => b.TotalGoalsScored),
-													HomeGoalsAgaints = tables.Where(t => t.TeamId == a.HomeId).Sum(b => b.TotalGoalsAgaints),
-													AwayGoalsAgaints = tables.Where(t => t.TeamId == a.AwayId).Sum(b => b.TotalGoalsAgaints),
-													MatchPlayed = matchPlayed.MatchesPlayed,
-													HomeThreePlus = calculator.CalculateThreePlusGoalsPercentage
-													(matches.Where(m => (m.HomeId == a.HomeId || m.AwayId == a.HomeId) &&
-																		m.Finished).Select(m => new MatchModel() {
-																			AwayID = m.AwayId,
-																			AwayGoals = m.AwayPoints,
-																			AwayName = m.AwayName,
-																			HomeID = m.HomeId,
-																			HomeGoals = m.HomePoints,
-																			HomeName = m.HomeName
-																		}).ToList()),
-													AwayThreePlus = calculator.CalculateThreePlusGoalsPercentage
-													(matches.Where(m => (m.HomeId == a.AwayId || m.AwayId == a.AwayId) &&
-																		m.Finished).Select(m => new MatchModel() {
-																			AwayID = m.AwayId,
-																			AwayGoals = m.AwayPoints,
-																			AwayName = m.AwayName,
-																			HomeID = m.HomeId,
-																			HomeGoals = m.HomePoints,
-																			HomeName = m.HomeName
-																		}).ToList())
-
-												}).ToListAsync();
-
+						var match =  matches.Where(r => r.EventGroupName == round.EventGroupName && r.StartTime < dateTo
+																									  && r.StartTime > dateFrom)
+												 .Select(a => new StatisticsMatchModel {
+													 HomeName = a.HomeName,
+													 AwayName = a.AwayName,
+													 StartTime = a.StartTime.ToString("dd.MM.yyyy. HH:mm"),
+													 HomeGoalsScored = tables.Where(t => t.TeamId == a.HomeId).Sum(b => b.TotalGoalsScored),
+													 AwayGoalsScored = tables.Where(t => t.TeamId == a.AwayId).Sum(b => b.TotalGoalsScored),
+													 HomeGoalsAgaints = tables.Where(t => t.TeamId == a.HomeId).Sum(b => b.TotalGoalsAgaints),
+													 AwayGoalsAgaints = tables.Where(t => t.TeamId == a.AwayId).Sum(b => b.TotalGoalsAgaints),
+													 MatchPlayed = matchPlayed.MatchesPlayed,
+													 //HomeThreePlus = calculator.CalculateThreePlusGoalsPercentage,
+													 HomeMatches = getMatches(matches, a.HomeId),
+													 AwayMatches = getMatches(matches, a.AwayId),
+												 }).ToList();
 						model.AddRange(match);
 					}
 				}
 
 				return Ok(model);
 			}
+		}
+
+		private List<MatchModel> getMatches(List<StatisticsMatches> matches, int teamId) {
+			var model = matches.Where(m => (m.HomeId == teamId || m.AwayId == teamId) &&
+										   m.Finished).Select(m => new MatchModel() {
+											   AwayID = m.AwayId,
+											   AwayGoals = m.AwayPoints,
+											   AwayName = m.AwayName,
+											   HomeID = m.HomeId,
+											   HomeGoals = m.HomePoints,
+											   HomeName = m.HomeName
+										   }).ToList();
+			return model;
 		}
 
 		public async Task<GoalsModel> CalculateGoalsStats(Int64 aoLeague, Int32 aoTeam) {

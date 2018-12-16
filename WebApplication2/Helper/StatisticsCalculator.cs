@@ -6,6 +6,7 @@ using SatisticsAPI.Models;
 
 namespace SatisticsAPI.Helper {
 	public class StatisticsCalculator {
+
 		#region CalculateThreePlusGoalsPercentage(List<MatchModel> aoMatches)
 		public int CalculateThreePlusGoalsPercentage(List<MatchModel> aoMatches) {
 			if (CalculateNPlusGoals(aoMatches, 3) == 0) {
@@ -148,7 +149,6 @@ namespace SatisticsAPI.Helper {
 		}
 		#endregion
 
-
 		#region CalculateNotTwoAndGoalsRange(List<MatchModel> aoMatches, int aoFromGoal)
 		public int CalculateNotTwoAndGoalsRange(List<MatchModel> aoMatches, int teamId, int aoFromGoal) {
 			var matches = aoMatches.Where(c => c.HomeID == teamId).ToList();
@@ -157,6 +157,19 @@ namespace SatisticsAPI.Helper {
 			var count = matches.Count(c => c.HomeGoals + c.AwayGoals >= aoFromGoal && c.HomeGoals >= c.AwayGoals);
 
 			return (count * 100) / matchPlayed;
+		}
+		#endregion
+
+		#region CalculateThreePlusCount(List<MatchModel> aoMatches, int aoFromGoal)
+		public int CalculateThreePlusCount(List<MatchModel> aoMatches) {
+			var count = 0;
+			foreach (var match in aoMatches) {
+				if ((match.HomeGoals + match.AwayGoals) > 2)
+					++count;
+				else
+					count = 0;
+			}
+			return count;
 		}
 		#endregion
 	}
