@@ -19,5 +19,6 @@ namespace SatisticsAPI.Models {
 		public int TeamID { get; internal set; }
 		public Int32 ZeroTwoToFive { get; set; }
 		public Int32 ZeroThreeToFive { get; set; }
+		public string LeagueName { get; internal set; }
 	}
 }

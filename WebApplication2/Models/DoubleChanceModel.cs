@@ -17,6 +17,6 @@ namespace SatisticsAPI.Models {
 		public Int32 TwoTwoToThreeGoals { get; set; }
 		public Int32 NotTwoAndThreeGoals { get; set; }
 		public Int32 NotTwoAndTwoGoals { get; set; }
-
+		public string LeagueName { get; internal set; }
 	}
 }

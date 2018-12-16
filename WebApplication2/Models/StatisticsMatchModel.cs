@@ -31,5 +31,6 @@ namespace SatisticsAPI.Models {
 
 		public List<StatisticsTable> HomeStats { get; internal set; }
 		public List<StatisticsTable> AwayStats { get; internal set; }
+		public string LeagueName { get; internal set; }
 	}
 }
