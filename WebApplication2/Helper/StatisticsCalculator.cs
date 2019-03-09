@@ -4,43 +4,57 @@ using System.Linq;
 using System.Threading.Tasks;
 using SatisticsAPI.Models;
 
-namespace SatisticsAPI.Helper {
-	public class StatisticsCalculator {
+namespace SatisticsAPI.Helper
+{
+	public class StatisticsCalculator
+	{
 
 		#region CalculateThreePlusGoalsPercentage(List<MatchModel> aoMatches)
-		public int CalculateThreePlusGoalsPercentage(List<MatchModel> aoMatches) {
-			if (CalculateNPlusGoals(aoMatches, 3) == 0) {
+		public int CalculateThreePlusGoalsPercentage(List<MatchModel> aoMatches)
+		{
+			if (CalculateNPlusGoals(aoMatches, 3) == 0)
+			{
 				return 0;
-			} else {
+			}
+			else
+			{
 				double percentage = CalculateNPlusGoals(aoMatches, 3);
 				percentage = (percentage / aoMatches.Count) * 100;
-				var per = (int) Math.Round(percentage);
+				var per = (int)Math.Round(percentage);
 				return per;
 			}
 		}
 		#endregion
 
 		#region CalculateGGThreePlusPercentage
-		public int CalculateGGThreePlusPercentage(List<MatchModel> aoMatches) {
-			if (CalculateNPlusGoals(aoMatches, 3) == 0) {
+		public int CalculateGGThreePlusPercentage(List<MatchModel> aoMatches)
+		{
+			if (CalculateNPlusGoals(aoMatches, 3) == 0)
+			{
 				return 0;
-			} else {
+			}
+			else
+			{
 				double percentage = CalculateGGNPlusGoals(aoMatches, 3);
 				percentage = (percentage / aoMatches.Count) * 100;
-				var per = (int) Math.Round(percentage);
+				var per = (int)Math.Round(percentage);
 				return per;
 			}
 		}
 		#endregion
 
 		#region CalculateGGorThreePlusPercentage
-		public int CalculateGGorThreePlusPercentage(List<MatchModel> aoMatches) {
-			if (CalculateNPlusGoals(aoMatches, 3) == 0 || (aoMatches.Count(m => m.HomeGoals > 0 && m.AwayGoals > 0) == 0)) {
+		public int CalculateGGorThreePlusPercentage(List<MatchModel> aoMatches)
+		{
+			if (CalculateNPlusGoals(aoMatches, 3) == 0 || (aoMatches.Count(m => m.HomeGoals > 0 && m.AwayGoals > 0) == 0))
+			{
 				return 0;
-			} else {
+			}
+			else
+			{
 				double percentage = CalculateGGorThreePlusGoals(aoMatches, 3);
 				percentage = (percentage / aoMatches.Count) * 100;
-				var per = (int) Math.Round(percentage);
+				var per = (int)Math.Round(percentage);
 				return per;
 			}
 		}
@@ -53,7 +67,8 @@ namespace SatisticsAPI.Helper {
 		/// <param name="aoMatches">List of matches the team has played</param>
 		/// <param name="limit">Limit for the calculation, 0-1,0-2,0-3</param>
 		/// <returns></returns>
-		public int CalculateZeroToNGoals(List<MatchModel> aoMatches, int limit) {
+		public int CalculateZeroToNGoals(List<MatchModel> aoMatches, int limit)
+		{
 			return aoMatches.Count(c => c.HomeGoals + c.AwayGoals <= limit);
 		}
 		#endregion
@@ -65,7 +80,8 @@ namespace SatisticsAPI.Helper {
 		/// <param name="aoMatches">List of matches the team has played</param>
 		/// <param name="limit">1+2+3+4+5+</param>
 		/// <returns></returns>
-		public int CalculateNPlusGoals(List<MatchModel> aoMatches, int limit) {
+		public int CalculateNPlusGoals(List<MatchModel> aoMatches, int limit)
+		{
 			return aoMatches.Count(c => c.HomeGoals + c.AwayGoals >= limit);
 		}
 		#endregion
@@ -77,7 +93,8 @@ namespace SatisticsAPI.Helper {
 		/// <param name="aoMatches">List of matches the team has played</param>
 		/// <param name="limit">1+2+3+4+5+</param>
 		/// <returns></returns>
-		public int CalculateGGNPlusGoals(List<MatchModel> aoMatches, int limit) {
+		public int CalculateGGNPlusGoals(List<MatchModel> aoMatches, int limit)
+		{
 			return aoMatches.Count(c => (c.HomeGoals + c.AwayGoals >= limit) && c.HomeGoals >= 1 && c.AwayGoals >= 1);
 		}
 		#endregion
@@ -89,46 +106,58 @@ namespace SatisticsAPI.Helper {
 		/// <param name="aoMatches">List of matches the team has played</param>
 		/// <param name="limit">1+2+3+4+5+</param>
 		/// <returns></returns>
-		public int CalculateGGorThreePlusGoals(List<MatchModel> aoMatches, int limit) {
+		public int CalculateGGorThreePlusGoals(List<MatchModel> aoMatches, int limit)
+		{
 			return aoMatches.Count(c => (c.HomeGoals + c.AwayGoals >= limit) || (c.HomeGoals > 0 && c.AwayGoals > 0));
 		}
 		#endregion
 
 		#region CalculateGoalsRange(List<MatchModel> aoMatches, int aoFromGoal, int aoToGoal)
-		public int CalculateGoalsRange(List<MatchModel> aoMatches, int aoFromGoal, int aoToGoal) {
+		public int CalculateGoalsRange(List<MatchModel> aoMatches, int aoFromGoal, int aoToGoal)
+		{
 			return aoMatches.Count(c => c.HomeGoals + c.AwayGoals >= aoFromGoal && c.HomeGoals + c.AwayGoals <= aoToGoal);
 		}
 		#endregion
 
 		#region CalculateAvgGoalsPerMatch(List<MatchModel> aoMatches)
-		public double CalculateAvgGoalsPerMatch(List<MatchModel> aoMatches) {
-			if (aoMatches.Any()) {
+		public double CalculateAvgGoalsPerMatch(List<MatchModel> aoMatches)
+		{
+			if (aoMatches.Any())
+			{
 				var totalGoals = 0.00;
-				foreach (var match in aoMatches) {
-					totalGoals += (double) match.HomeGoals + match.AwayGoals;
+				foreach (var match in aoMatches)
+				{
+					totalGoals += (double)match.HomeGoals + match.AwayGoals;
 				}
 				return totalGoals / aoMatches.Count();
-			} else {
+			}
+			else
+			{
 				return 0;
 			}
 		}
 		#endregion
 
 		#region CalculateZeroToTwoGoalsPercentage(List<MatchModel> aoMatches)
-		public int CalculateZeroToTwoGoalsPercentage(List<MatchModel> aoMatches) {
-			if (CalculateZeroToNGoals(aoMatches, 2) == 0) {
+		public int CalculateZeroToTwoGoalsPercentage(List<MatchModel> aoMatches)
+		{
+			if (CalculateZeroToNGoals(aoMatches, 2) == 0)
+			{
 				return 0;
-			} else {
+			}
+			else
+			{
 				double percentage = CalculateZeroToNGoals(aoMatches, 2);
 				percentage = (percentage / aoMatches.Count) * 100;
-				var per = (int) Math.Round(percentage);
+				var per = (int)Math.Round(percentage);
 				return per;
 			}
 		}
 		#endregion
 
 		#region CalculateZeroAndGoalsRange(List<MatchModel> aoMatches, int aoFromGoal, int aoToGoal)
-		public int CalculateZeroAndGoalsRange(List<MatchModel> aoMatches, int teamId, int aoFromGoal, int aoToGoal) {
+		public int CalculateZeroAndGoalsRange(List<MatchModel> aoMatches, int teamId, int aoFromGoal, int aoToGoal)
+		{
 			var matches = aoMatches.Where(c => c.HomeID == teamId).ToList();
 			var matchPlayed = matches.Count == 0 ? 1 : matches.Count;
 
@@ -139,7 +168,8 @@ namespace SatisticsAPI.Helper {
 		#endregion
 
 		#region CalculateTwoAndGoalsRange(List<MatchModel> aoMatches, int aoFromGoal, int aoToGoal)
-		public int CalculateTwoAndGoalsRange(List<MatchModel> aoMatches, int teamId, int aoFromGoal, int aoToGoal) {
+		public int CalculateTwoAndGoalsRange(List<MatchModel> aoMatches, int teamId, int aoFromGoal, int aoToGoal)
+		{
 			var matches = aoMatches.Where(c => c.AwayID == teamId).ToList();
 			var matchPlayed = matches.Count == 0 ? 1 : matches.Count;
 
@@ -150,7 +180,8 @@ namespace SatisticsAPI.Helper {
 		#endregion
 
 		#region CalculateNotTwoAndGoalsRange(List<MatchModel> aoMatches, int aoFromGoal)
-		public int CalculateNotTwoAndGoalsRange(List<MatchModel> aoMatches, int teamId, int aoFromGoal) {
+		public int CalculateNotTwoAndGoalsRange(List<MatchModel> aoMatches, int teamId, int aoFromGoal)
+		{
 			var matches = aoMatches.Where(c => c.HomeID == teamId).ToList();
 			var matchPlayed = matches.Count == 0 ? 1 : matches.Count;
 
@@ -161,15 +192,63 @@ namespace SatisticsAPI.Helper {
 		#endregion
 
 		#region CalculateThreePlusCount(List<MatchModel> aoMatches, int aoFromGoal)
-		public int CalculateThreePlusCount(List<MatchModel> aoMatches) {
+		public int CalculateThreePlusCount(List<MatchModel> aoMatches)
+		{
 			var count = 0;
-			foreach (var match in aoMatches) {
+			foreach (var match in aoMatches)
+			{
 				if ((match.HomeGoals + match.AwayGoals) > 2)
 					++count;
 				else
 					count = 0;
 			}
 			return count;
+		}
+		#endregion
+
+		#region CalculateLastNAvgGoalsPerMatch(List<MatchModel> aoMatches)
+		public double CalculateAvgGoalsPerMatch(List<MatchModel> aoMatches, int numMatches)
+		{
+			var total = 0.0;
+			var matchPlayed = aoMatches.Count;
+			if (matchPlayed >= numMatches)
+			{
+				var matches = aoMatches.Skip(Math.Max(0, matchPlayed - numMatches)).ToList();
+				total = CalculateAvgGoalsPerMatch(matches);
+			}
+			return total;
+		}
+		#endregion
+
+		#region CalculateHomeWinAndGG(List<MatchModel> aoMatches, int teamId)
+		public int CalculateHomeWinAndGG(List<MatchModel> aoMatches, int teamId)
+		{
+			var matchPlayed = aoMatches.Count();
+			if (matchPlayed == 0)
+				return 0;
+			else
+			{
+				decimal HomeAndGG = aoMatches.Count(c => c.HomeID == teamId && c.HomeGoals >= 1 && c.AwayGoals >= 1);
+
+				return (int)Math.Round(HomeAndGG / matchPlayed * 100);
+			}
+
+		}
+		#endregion
+
+		#region CalculateAwayWinAndGG(List<MatchModel> aoMatches, int teamId)
+		public int CalculateAwayWinAndGG(List<MatchModel> aoMatches, int teamId)
+		{
+			var matchPlayed = aoMatches.Count();
+			if (matchPlayed == 0)
+				return 0;
+			else
+			{
+				decimal awayAndGG = aoMatches.Count(c => c.AwayID == teamId && c.HomeGoals >= 1 && c.AwayGoals >= 1);
+
+				return (int)Math.Round(awayAndGG / matchPlayed * 100);
+			}
+
 		}
 		#endregion
 	}

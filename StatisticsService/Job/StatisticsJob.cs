@@ -19,8 +19,6 @@ namespace StatisticsService.Job {
 		public async Task GetStats() {
 			try {
 				//BaseLogClass.Instance.InfoMessage("Started");
-				var matchesParser = new MatchParser();
-				var tablesParser = new TableParser();
 
 				var loLeagues =  getStatisticsLeagues();
 
@@ -31,8 +29,8 @@ namespace StatisticsService.Job {
 						sWatch.Start();
 						var tParser = new TableParser();
 						var mParser = new MatchParser();
-						var t = GetTable(league.LeagueId);
-						var m = GetMatches(league.LeagueId);
+						var t = GetTable((long)league.LeagueId);
+						var m = GetMatches((long)league.LeagueId);
 						tParser.Parse(t);
 						mParser.Parse(m);
 						new DBHelper().UpdateTable(tParser.Records);
